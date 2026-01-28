@@ -2,8 +2,6 @@
 
 # 1. ERROR A LA HORA DE CREAR UN REGISTRO EN LA TABLA TASKS
 
-- El primer error que encontre fue a la hora de crear task, a continuacion paso a paso de como encontre el error y como lo solucione:
-
 1. Primero abri la consola para ver que devolvia la respuesta de axios, la respuesta que devolvia era 500 por la url /tasks con el metodo POST
 
 2. Primero revise por el controller task en el metodo 'store', ya que ese es la funcion del metodo post por la cual crea 'task'

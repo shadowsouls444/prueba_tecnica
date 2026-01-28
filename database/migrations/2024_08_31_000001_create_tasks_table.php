@@ -18,7 +18,7 @@ class CreateTasksTable extends Migration
             $table->timestamps();
 
             // Índice y clave foránea
-            $table->foreign('user_id')->references('id')->on('user')->onDelete('cascade');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 

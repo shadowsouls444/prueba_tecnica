@@ -2,14 +2,23 @@
     <div class="container mt-5">
         <h1 class="text-center mb-4">Task List</h1>
         <ul class="list-group mb-4">
-            <li v-for="task in tasks" :key="task.id" class="list-group-item d-flex justify-content-between align-items-center">
+
+            <div class="filters mb-3">
+                <button @click="filterTask('todos')" class="btn btn-secondary btn-sm">Todos</button>
+                <button @click="filterTask('completado')" class="btn btn-success btn-sm">Completado</button>
+                <button @click="filterTask('pendiente')" class="btn btn-warning btn-sm">Pendiente</button>
+            </div>
+
+            <li v-for="task in tasks" :key="task.id"
+                class="list-group-item d-flex justify-content-between align-items-center">
                 <div>
                     <h5 class="mb-1">{{ task.title }}</h5>
                     <p class="mb-1">{{ task.description }}</p>
-                    <small class="text-muted">Assigned to: {{ task.user }}</small>
+                    <small class="text-muted">Assigned to: {{ task.user.name }}</small>
                 </div>
                 <div>
-                    <button class="btn btn-success btn-sm mr-2" @click="completeTask(task.id)">Complete</button>
+                    <button v-if="!task.completed" class="btn btn-success btn-sm mr-2" @click="completeTask(task)">Complete</button>
+                    <span v-else>Task completed</span>
                     <button class="btn btn-danger btn-sm" @click="deleteTask(task.id)">Delete</button>
                 </div>
             </li>
@@ -30,7 +39,7 @@
 </template>
 
 <script>
-import { mapState, mapActions } from 'vuex';
+import { mapState, mapActions, mapGetters  } from 'vuex';
 
 export default {
     data() {
@@ -43,7 +52,7 @@ export default {
         };
     },
     computed: {
-        ...mapState(['tasks']) // Simplificado para mapState
+        ...mapGetters(['tasks']) // Simplificado para mapState
     },
     methods: {
         ...mapActions(['fetchTasks', 'addTask', 'completeTask', 'deleteTask']),
@@ -62,9 +71,12 @@ export default {
                 console.error('Error adding task:', error);
             });
         },
-        completeTask(taskId) {
+        completeTask(task) {
+
+            const updateTask = { id: task.id, title: task.title, description: task.description, completed: 1 }
+
             // Se utiliza la acción 'completeTask'
-            this.$store.dispatch('completeTask', taskId).catch(error => {
+            this.$store.dispatch('updateTask', updateTask).catch(error => {
                 console.error('Error completing task:', error);
             });
         },
@@ -73,10 +85,15 @@ export default {
             this.$store.dispatch('deleteTask', taskId).catch(error => {
                 console.error('Error deleting task:', error);
             });
+        },
+        filterTask(filter){
+            this.$store.dispatch('addFilter',filter).catch(error => {
+                console.error('Error: ', error)
+            })
         }
     },
     mounted() {
-
+        this.$store.dispatch('getTasks');
     }
 };
 </script>

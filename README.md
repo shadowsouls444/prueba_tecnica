@@ -1,84 +1,58 @@
-# Prueba Técnica - Sistema de Gestión de Tareas
+### ERRORES SOLUCIONADOS
 
-## Descripción del Proyecto
+# 1. ERROR A LA HORA DE CREAR UN REGISTRO EN LA TABLA TASKS
 
-Este proyecto es un sistema básico de gestión de tareas desarrollado con Laravel y Vue.js. El objetivo de esta prueba técnica es identificar y corregir errores en el código tanto en el backend como en el frontend. El sistema permite a los usuarios crear, actualizar, eliminar y visualizar tareas.
+- El primer error que encontre fue a la hora de crear task, a continuacion paso a paso de como encontre el error y como lo solucione:
 
-## Objetivo de la Prueba
+1. Primero abri la consola para ver que devolvia la respuesta de axios, la respuesta que devolvia era 500 por la url /tasks con el metodo POST
 
-El objetivo principal de esta prueba es evaluar tus habilidades para depurar y corregir errores en un proyecto existente que utiliza Laravel, PHP, JavaScript, y Vue.js. Deberás:
+2. Primero revise por el controller task en el metodo 'store', ya que ese es la funcion del metodo post por la cual crea 'task'
 
-- Identificar y corregir errores en el backend relacionado con la creación, actualización, eliminación y validación de tareas.
-- Corregir problemas en el frontend que afectan la visualización y manejo de la lista de tareas.
-- Asegurarte de que las tareas se gestionen correctamente en la interfaz de usuario.
+3. Inicialmente no vi nada raro, asi que decidi mostrar por consola en TaskList.vue los valores que retornaba el objeto 'newTask' por el metodo addTask() y vi que eran correctos
 
-Además, deberás agregar una funcionalidad extra para filtrar las tareas completadas y pendientes.
+4. Vi que solo arrojaba el error general solo arrojaba un estado 500 no daba mas detalles, asi que fui por el archivo store.js, me fui por el arreglo de actions, y en el metodo addTask() agregue esta linea por el catch --> console.error("Error adding task:", error.response.data);
 
-## Instrucciones de Instalación
+Con esto me aseguro de que en la consola se muestren los datos que me devuelve Axios, específicamente el contenido de la respuesta del servidor (error.response.data), incluyendo mensajes de error, detalles de validación o excepciones, en lugar de solo recibir un estado 500 genérico.
 
-Sigue los siguientes pasos para configurar el proyecto en tu entorno local:
+5. Luego otra vez intento crear una tarea (task) y me sale una respuesta mas detallada en la consola especificamente en la propiedad de message:
+: 
+"SQLSTATE[42S02]: Base table or view not found: 1146 Table 'project.users' doesn't exist (SQL: select * from `users` where `email` = carlos@gmail.com limit 1)"
 
+6. Revise en la BD y ejecute el comando show tables, para ver que tablas tenia una vez que me mostro las tablas ya me di cuenta del origen del error, no existia una tabla 'users' si no una tabla user, Laravel utiliza por defecto los nombres de la tabla en plural, por eso intentaba consultar users y se producía el error.
 
-1. **Clona el repositorio:**
+7. Entre en la carpeta database/migrations y modifique la migración de la tabla user, cambiando el nombre del schema a users (antes estaba como user). Ademas, en la migración de tasks ajuste la referencia de la clave foránea para que apunte a la tabla users
 
-       Prueba-Soporte
-   
-2. **Instala las dependencias de PHP y Node.js:**
+8. Ejecute el comando php artisan migrate:refresh para revertir todas las migraciones y crearlas de nuevo
 
-   .Composer: Para instalar las dependencias de PHP, ejecuta:
-   
-        composer install
+9. Volvi a intentar a crear una tarea y esta vez si funciono
 
-   .NPM: Para instalar las dependencias de Node.js, ejecuta:
+# 2. NO CARGA LAS TAREAS CUANDO SE INGRESA A LA PAGINA
 
-        npm install
-        npm run dev
+1. Primero note que no habia un motodo en el controlador para obtener todas las tareas. Por eso cree un nuevo metodo llamado getAll() que devuelve las tareas en formato JSON, y luego configure la ruta correspondiente en routes/web.php para que llame a este método.
 
-3. **Configura el archivo de entorno .env:**
+2. En mutations cree un nuevo metodo llamado SET_TASKS para modificar el estado inicial de la lista tasks con los datos que se le pasen.
 
-   .Copia el archivo .env.example a .env:
+3. En actions cree un metodo llamado getTasks, que realiza una petición GET a la URL /tasks. Al recibir respuesta de Axios, le pasamos los datos obtenidos en formato JSON como parametro a la funcion SET_TASKS para que actualize el estado inicial.
 
-       cp .env.example .env
-   
-   .Genera la clave de la aplicación:
+4. En TaskList.vue, especificamente en el script dentro de methods, usamos mounted() para ejecutar el metodo getTasks al cargar el componente, para que muestre todas las tareas creadas.
 
-       php artisan key:generate
-   
-   .Configura la base de datos en el archivo .env. Asegúrate de tener una base de datos MySQL disponible y configurada.
-   
-4. **Ejecuta las migraciones para crear las tablas necesarias:**
+## 3. Error al marcar como completado una tarea
 
-       php artisan migrate
+1. Cuando intento marcar una tarea como completada sale este error [vuex] unknown action type: completeTask en la consola, deduci que el metodo no existia, asi que fui al archivo store.js para verificar y encontre que el metodo que lo marca como 'completado' es updateTask
 
-5. **Compilar Recursos de Frontend:**
+2. En TaskList.vue especificamente por this.$store.dispatch('completeTask', taskId), cambie el nombre del metodo por updateTask
 
-   .Compila los archivos de frontend utilizando Laravel Mix:
+3. Cuando intente de nuevo actualizar la tarea, salio error 422 en la consola, asi que supuse que era por una validacion de campos, asi que fui directamente al archivo TaskController.php
 
-       npm run dev
+4. Me di cuenta que el objeto $validate le falta el campo completed asi que lo agregue
 
-6. **Iniciar el Servidor:**
+5. Lo probe una vez mas y no actualizo, asi que busque por la carpeta/archivo Models/Task.php para ver si tenia algun campo protegido y asi fue, agregue el campo completed $fillable para que me permita modificarlo
 
-   .Inicia el servidor de desarrollo de Laravel:
+6. Lo probe y funciono correctamente
 
-       php artisan serve
+## CAMBIOS ADICIONALES
+- Todos los métodos de los controladores ahora retornan respuestas en formato JSON, con códigos de estado HTTP apropiados según la acción realizada.
 
-       
-**Objetivo de la Prueba**
+- Al crear una tarea, si el usuario asignado no existe en la base de datos, se retorna un estado 404 y se muestra un mensaje de alerta indicando que el usuario no existe.
 
-El proyecto contiene errores tanto en el backend (Laravel/PHP) como en el frontend (JavaScript). Tu objetivo es:
-
- 1.Identificar los errores en el código.
- 2.Corregir los errores para que la aplicación funcione correctamente.
- 3.Probar la aplicación después de realizar las correcciones para asegurarte de que todo funcione como se espera.
- 
-**Entrega**
-
-Sube el código corregido a un repositorio de GitHub y envíanos el enlace. Asegúrate de describir los problemas que encontraste y cómo los solucionaste en este archivo README.md.
-
-**Notas**
-
-Puedes añadir cualquier comentario adicional sobre las decisiones que tomaste al corregir el código.
-Recuerda que el objetivo es demostrar tu capacidad para depurar y mejorar código existente.
-
-¡Buena suerte!
-   
+- Se agregó una directiva v-if con v-else en la vista para que el botón "Complete" solo se muestre si la tarea está en estado pendiente.

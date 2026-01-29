@@ -8,7 +8,7 @@
 
 3. Inicialmente no vi nada raro, asi que decidi mostrar por consola en TaskList.vue los valores que retornaba el objeto 'newTask' por el metodo addTask() y vi que eran correctos
 
-4. Vi que solo arrojaba el error general solo arrojaba un estado 500 no daba mas detalles, asi que fui por el archivo store.js, me fui por el arreglo de actions, y en el metodo addTask() agregue esta linea por el catch --> console.error("Error adding task:", error.response.data);
+4. Vi que solo arrojaba el error 500 no daba mas detalles, asi que fui por el archivo store.js, me fui por el arreglo de actions, y en el metodo addTask() agregue esta linea por el catch --> console.error("Error adding task:", error.response.data);
 
 Con esto me aseguro de que en la consola se muestren los datos que me devuelve Axios, específicamente el contenido de la respuesta del servidor (error.response.data), incluyendo mensajes de error, detalles de validación o excepciones, en lugar de solo recibir un estado 500 genérico.
 

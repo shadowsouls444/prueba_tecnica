@@ -26,7 +26,7 @@ Con esto me aseguro de que en la consola se muestren los datos que me devuelve A
 
 # 2. NO CARGA LAS TAREAS CUANDO SE INGRESA A LA PAGINA
 
-1. Primero note que no habia un motodo en el controlador para obtener todas las tareas. Por eso cree un nuevo metodo llamado getAll() que devuelve las tareas en formato JSON, y luego configure la ruta correspondiente en routes/web.php para que llame a este método.
+1. Primero note que no habia un metodo en el controlador para obtener todas las tareas. Por eso cree un nuevo metodo llamado getAll() que devuelve las tareas en formato JSON, y luego configure la ruta correspondiente en routes/web.php para que llame a este método.
 
 2. En mutations cree un nuevo metodo llamado SET_TASKS para modificar el estado inicial de la lista tasks con los datos que se le pasen.
 
